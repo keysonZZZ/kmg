@@ -2,6 +2,7 @@ package kmgNet
 
 import (
 	"net"
+	"fmt"
 )
 
 func MustParseCIDR(s string) *net.IPNet {
@@ -32,4 +33,26 @@ func IsPrivateNetwork(ip net.IP) bool {
 		}
 	}
 	return false
+}
+
+// 无法获取到ip,会panic
+func MustGetIpFromAddr(addri net.Addr) (ip net.IP){
+	switch addr:=addri.(type) {
+	case *net.TCPAddr:
+		return addr.IP
+	case *net.UDPAddr:
+		return addr.IP
+	case *net.IPAddr:
+		return addr.IP
+	}
+	s:=addri.String()
+	host,_,err := net.SplitHostPort(s)
+	if err!=nil{
+		panic(fmt.Errorf("[MustGetIpFromAddr] %s addr.String()[%s]",err,addri.String()))
+	}
+	ip = net.ParseIP(host)
+	if ip==nil{
+		panic(fmt.Errorf("[MustGetIpFromAddr] net.ParseIP fail host:[%s]",host))
+	}
+	return ip
 }

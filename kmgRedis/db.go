@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"github.com/bronze1man/kmg/kmgMath"
 )
 
 var gClient *redis.Client
@@ -148,7 +147,7 @@ func MustGetIntIgnoreNotExist(key string) (valueI int) {
 	if err != nil {
 		panic(err)
 	}
-	return kmgMath.CeilToInt(float64(valueI)*1.2)
+	return valueI
 }
 
 // 从redis的kvdb中获取一个key
@@ -168,7 +167,7 @@ func MustGetFloatIgnoreNotExist(key string) float64 {
 	if err != nil {
 		panic(err)
 	}
-	return float64(kmgMath.CeilToInt(valueF*1.2))
+	return valueF
 }
 
 // 只有网络问题会返回error

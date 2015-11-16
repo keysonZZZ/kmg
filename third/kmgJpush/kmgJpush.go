@@ -21,6 +21,64 @@ type NewClientRequest struct {
 	Secret       string
 	Platform     SystemPlatform //iOS、Android平台
 	IsIosProduct bool           //如果是否false表示向测试设备推送,如果是true表示向正式设备推送,后台的那个开发与正式似乎没有作用.
+	IsActive     bool
+}
+type JpushConfig struct {
+	Content string
+	Alias string
+	Tag string
+	Badge string
+}
+func (c *Client) EasyPush(config *JpushConfig)(err error){
+	if c.IsActive == false{
+		kmgLog.Log("jpush", "Jpush Client is not active,please checkout your configure",c.name,c.IsIosProduct,c.IsActive,config)
+		return
+	}
+	if config.Badge == ""{
+		config.Badge = "1"
+	}
+	nb := jpush.NewNoticeBuilder()
+	nb.SetPlatform(jpush.AllPlatform())
+	if config.Alias == ""||config.Tag == ""{
+		nb.SetAudience(jpush.AllAudience())
+	}else{
+		au := &jpush.Audience{}
+		if config.Alias != ""{
+			au.SetAlias([]string{config.Alias})
+		}
+		if config.Tag != ""{
+			au.SetTag([]string{config.Tag})
+		}
+		nb.SetAudience(au)
+	}
+	//Android配置
+	notice := jpush.NewNoticeAndroid()
+	notice.Alert = config.Content
+	nb.SetNotice(notice)
+
+	//iOS配置
+	iosNotice := jpush.NewNoticeIos()
+	iosNotice.Sound = "default"
+	iosNotice.Badge = "1"
+	iosNotice.Alert = config.Content
+	nb.SetNotice(iosNotice)
+
+	op := jpush.NewOptions()
+	op.SetApns_production(c.IsIosProduct)
+	nb.SetOptions(op)
+	ret, err := c.c.Send(nb)
+	if err != nil {
+		return err
+	}
+	if ret.Error.Code == 0 {
+		kmgLog.Log("jpush", "Push success", c.name, config.Content)
+		return nil
+	}
+	if ret.Error.Code == 1011 {
+		kmgLog.Log("jpush","Not Found User",c.name,config)
+		return NotFoundUser
+	}
+	return fmt.Errorf("code:%d err: %s", ret.Error.Code, ret.Error.Message)
 }
 
 type SystemPlatform string
@@ -37,88 +95,40 @@ func NewClient(req NewClientRequest) *Client {
 		IsIosProduct: req.IsIosProduct,
 		name:         req.Name,
 		Platform:     req.Platform,
+		IsActive:     req.IsActive,
 	}
 }
 
 var NotFoundUser error = errors.New("[kmgJpush] user not exist")
 
 func (c *Client) PushToOne(alias string, content string) (err error) {
-	if c.IsActive == false{
-		kmgLog.Log("jpush", "Jpush Client is not active,please checkout your configure",c.name,alias,content,c.IsIosProduct,c.IsActive)
-		return
-	}
-	nb := jpush.NewNoticeBuilder()
-	nb.SetPlatform(jpush.AllPlatform())
-	au := &jpush.Audience{}
-	au.SetAlias([]string{alias})
-	nb.SetAudience(au)
-
-	//Android配置
-	notice := jpush.NewNoticeAndroid()
-	notice.Alert = content
-	nb.SetNotice(notice)
-
-	//iOS配置
-	iosNotice := jpush.NewNoticeIos()
-	iosNotice.Sound = "default"
-	iosNotice.Badge = "1"
-	iosNotice.Alert = content
-	nb.SetNotice(iosNotice)
-
-	op := jpush.NewOptions()
-	op.SetApns_production(c.IsIosProduct)
-	nb.SetOptions(op)
-	ret, err := c.c.Send(nb)
+	err = c.EasyPush(&JpushConfig{
+		Alias: alias,
+		Content: content,
+	})
 	if err != nil {
 		return err
 	}
-	if ret.Error.Code == 0 {
-		kmgLog.Log("jpush", "PushToOne success", c.name, alias, content, c.IsIosProduct)
-		return nil
+	return nil
+}
+
+func (c *Client) PushToTag(tag string, content string) (err error) {
+	err = c.EasyPush(&JpushConfig{
+		Tag: tag,
+		Content: content,
+	})
+	if err != nil {
+		return err
 	}
-	if ret.Error.Code == 1011 {
-		kmgLog.Log("jpush", "PushToOne NotFoundUser", c.name, alias, content)
-		return NotFoundUser
-	}
-	return fmt.Errorf("code:%d err: %s", ret.Error.Code, ret.Error.Message)
+	return nil
 }
 
 func (c *Client) PushToAll(content string) (err error) {
-	if c.IsActive == false{
-		kmgLog.Log("jpush", "Jpush Client is not active,please checkout your configure",c.name,content,c.IsIosProduct,c.IsActive)
-		return
-	}
-	nb := jpush.NewNoticeBuilder()
-	nb.SetPlatform(jpush.AllPlatform())
-	nb.SetAudience(jpush.AllAudience())
-
-	// Android配置
-	notice := jpush.NewNoticeAndroid()
-	notice.Alert = content
-	nb.SetNotice(notice)
-
-	// iOS配置
-	iosNotice := jpush.NewNoticeIos()
-	iosNotice.Sound = "default"
-	iosNotice.Badge = "1"
-	iosNotice.Alert = content
-	nb.SetNotice(iosNotice)
-
-	op := jpush.NewOptions()
-	op.SetApns_production(c.IsIosProduct)
-	//	op.SetBigPushDuration(60) //过快的进行全局推送,会导致系统其他地方压力太大而挂掉.先设置成60分钟.
-	nb.SetOptions(op)
-	ret, err := c.c.Send(nb)
+	err = c.EasyPush(&JpushConfig{
+		Content: content,
+	})
 	if err != nil {
 		return err
 	}
-	if ret.Error.Code == 0 {
-		kmgLog.Log("jpush", "PushToAll success", c.name, content)
-		return nil
-	}
-	if ret.Error.Code == 1011 {
-		kmgLog.Log("jpush", "PushToAll NotFoundUser", c.name, content)
-		return NotFoundUser
-	}
-	return fmt.Errorf("code:%d err: %s", ret.Error.Code, ret.Error.Message)
+	return nil
 }

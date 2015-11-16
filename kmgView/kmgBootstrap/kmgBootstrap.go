@@ -33,15 +33,20 @@ type Table struct {
 	DataList  [][]kmgView.HtmlRenderer
 }
 
+func (p *Table) SetTitleListString(TitleList []string){
+	p.TitleList = make([]kmgView.HtmlRenderer,len(TitleList))
+	for i, title := range TitleList {
+		p.TitleList[i] = kmgView.String(title)
+	}
+}
+
 func (p Table) HtmlRender() string {
 	return tplTable(p)
 }
 
 func NewTable(TitleList []string, DataList [][]string) Table {
 	t := Table{}
-	for _, title := range TitleList {
-		t.TitleList = append(t.TitleList, kmgView.String(title))
-	}
+	t.SetTitleListString(TitleList)
 	for _, row := range DataList {
 		renderRow := []kmgView.HtmlRenderer{}
 		for _, value := range row {
