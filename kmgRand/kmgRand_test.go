@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	. "github.com/bronze1man/kmg/kmgTest"
+	"math/rand"
+	"fmt"
 )
 
 func TestIntBetween(t *testing.T) {
@@ -17,3 +19,13 @@ func TestIntBetween(t *testing.T) {
 	Equal(hasView[0], true)
 	Equal(hasView[1], true)
 }
+
+/*
+func TestPerm(t *testing.T){
+	rand.Seed(1)
+	for i:=0;i<100;i++{
+		ret:=rand.Perm(3)
+		fmt.Println(ret)
+	}
+}
+*/

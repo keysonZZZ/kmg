@@ -14,5 +14,5 @@ func SyncTime() {
 	if !kmgCmd.Exist("ntpdate") {
 		kmgCmd.MustRun("apt-get install -y ntpdate")
 	}
-	kmgCmd.MustRun("ntpdate -u ntp.api.bz")
+	kmgCmd.MustRun("ntpdate -u pool.ntp.org")
 }

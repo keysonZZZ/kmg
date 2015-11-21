@@ -39,6 +39,15 @@ func (p *Table) SetTitleListString(TitleList []string){
 		p.TitleList[i] = kmgView.String(title)
 	}
 }
+func (p *Table) SetDataListString(DataList [][]string){
+	for _, row := range DataList {
+		renderRow := []kmgView.HtmlRenderer{}
+		for _, value := range row {
+			renderRow = append(renderRow, kmgView.String(value))
+		}
+		p.DataList = append(p.DataList, renderRow)
+	}
+}
 
 func (p Table) HtmlRender() string {
 	return tplTable(p)
@@ -47,13 +56,7 @@ func (p Table) HtmlRender() string {
 func NewTable(TitleList []string, DataList [][]string) Table {
 	t := Table{}
 	t.SetTitleListString(TitleList)
-	for _, row := range DataList {
-		renderRow := []kmgView.HtmlRenderer{}
-		for _, value := range row {
-			renderRow = append(renderRow, kmgView.String(value))
-		}
-		t.DataList = append(t.DataList, renderRow)
-	}
+	t.SetDataListString(DataList)
 	return t
 }
 

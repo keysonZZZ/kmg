@@ -24,6 +24,12 @@ func ParseAutoInLocation(sTime string, loc *time.Location) (t time.Time, err err
 	return
 }
 
+func FixLocalTimeToOffsetSpecifiedZoneTime(timeOffset int, localTime string) string {
+	clientTimeZone := time.FixedZone("ClientTimeZone", timeOffset)
+	serverTime := MustParseAutoInDefault(localTime)
+	return serverTime.In(clientTimeZone).Format(FormatMysql)
+}
+
 func MustParseAutoInDefault(sTime string) (t time.Time) {
 	t, err := ParseAutoInLocation(sTime, DefaultTimeZone)
 	if err != nil {

@@ -26,7 +26,7 @@ type SDK interface {
 	//FlavorName   string //实例配置，如 4 CPU / 4GB RAM
 
 	//以实例外网 Ip 为主键的方法，通常用这些已经够了
-	//创建一个新实例，保证实例可用
+	//创建一个新实例，保证实例可用,出现错误 panic
 	CreateInstance() (ip string)
 	DeleteInstance(ip string)
 	RenameInstanceByIp(name, ip string)
@@ -35,6 +35,7 @@ type SDK interface {
 	//向云服务提供商申请分配新实例，http 请求后，立即返回实例ID，不要求实例当时可用
 	AllocateNewInstance() (id string)
 	//让一台实例变为可用状态
+	//不断重试,彻底失败,会返回空字符串
 	MakeInstanceAvailable(id string) (ip string)
 
 	//以实例 Id 为主键的方法，一般不使用，当没有实例没有 ip 时可以使用

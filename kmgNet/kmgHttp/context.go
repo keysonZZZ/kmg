@@ -305,7 +305,7 @@ func (c *Context) SetResponseCode(code int) {
 
 func (c *Context) Redirect(url string) {
 	c.redirectUrl = url
-	c.responseCode = 302
+	c.responseCode = 302 // 302 是无缓存跳转,请不要修改为其他code
 }
 
 func (c *Context) NotFound(msg string) {

@@ -5,7 +5,7 @@ func tplForm (config Form) string {
         method="get"
     }
 ?>
-    <form class="form-horizontal" autocomplete="off" role="form" action="<?=config.Url?>" method="<?=method?>">
+    <form <? if config.IsHidden { ?>style="display: none;"<? } ?> id="<?= config.Id ?>" class="form-horizontal" autocomplete="off" role="form" action="<?=config.Url?>" method="<?=method?>">
         <div class="panel-body">
             <? for _,input:=range config.InputList{ ?>
                 <?=raw(input.HtmlRender())?>

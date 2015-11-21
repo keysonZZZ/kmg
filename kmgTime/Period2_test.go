@@ -39,6 +39,7 @@ func TestPeriodListInterface(ot *testing.T) {
 			ItemList: []int{3, 4},
 		},
 	}
+
 	PeriodListSort(periodList)
 	i, exist := SelectPeriodFromSortedPeriodList(MustFromMysqlFormat("2001-01-01 23:00:00"), periodList)
 	kmgTest.Equal(exist, true)

@@ -2,8 +2,10 @@ package kmgTime
 
 import (
 	"testing"
+//	"time"
+//
+//	"github.com/bronze1man/kmg/kmgTest"
 	"time"
-
 	"github.com/bronze1man/kmg/kmgTest"
 )
 

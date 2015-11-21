@@ -32,6 +32,11 @@ func IsConnectionRefused(err error) bool {
 	return err != nil && strings.Contains(err.Error(), "connection refused")
 }
 
+// 服务器关机
+func IsNoRouteToHost(err error)bool{
+	return err != nil && strings.Contains(err.Error(), "no route to host")
+}
+
 // 当前设备没有可用的网络设备,在网络切换时会出现
 // 出现位置 udp read, udp write,udp dial
 func IsNetworkIsUnreachable(err error) bool {
