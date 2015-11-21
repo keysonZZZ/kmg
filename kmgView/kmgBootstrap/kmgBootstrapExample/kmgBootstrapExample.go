@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/bronze1man/kmg/encoding/kmgYaml"
 	"github.com/bronze1man/kmg/kmgControllerRunner"
 	"github.com/bronze1man/kmg/kmgNet/kmgHttp"
 	"github.com/bronze1man/kmg/kmgView"
@@ -86,8 +87,8 @@ func (e Example) Demo1(ctx *kmgHttp.Context) {
 				kmgView.String("使用 DropDown"),
 				kmgBootstrap.DropDown{
 					Title: kmgBootstrap.Button{
-						Size:    kmgBootstrap.ButtonSizeSmall,
-						Color:   kmgBootstrap.ButtonColorSuccess,
+						Size:  kmgBootstrap.ButtonSizeSmall,
+						Color: kmgBootstrap.ButtonColorSuccess,
 						Content: kmgView.HtmlRendererList{
 							kmgView.String("更多"),
 							kmgBootstrap.Blank(1),
@@ -200,7 +201,20 @@ func (e Example) Demo1(ctx *kmgHttp.Context) {
 						},
 					},
 				},
+				kmgBootstrap.Br(2),
+				kmgBootstrap.Pre(`从 URL 直接发送 POST 的链接`),
+				kmgBootstrap.NewPostButton("/?n=main.Example.DemoPostAction&Name=kmg&Age=12", "POST 请求"),
+				kmgBootstrap.Blank(2),
+				kmgBootstrap.NewGetButton("/?n=main.Example.DemoPostAction&Name=kmg&Age=12", "非 POST 请求"),
 			},
 		},
 	).HtmlRender())
+}
+
+func (e Example) DemoPostAction(ctx *kmgHttp.Context) {
+	ctx.MustPost()
+	b := kmgYaml.MustMarshal(ctx.GetInMap())
+	ctx.WriteString(kmgBootstrap.NewWrap("DemoPostAction", kmgBootstrap.Pre(`
+You send me a HTTP POST Request
+`+string(b))).HtmlRender())
 }

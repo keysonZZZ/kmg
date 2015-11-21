@@ -1,6 +1,6 @@
 <? package kmgBootstrap
 func tplButton (button Button) string { ?>
-<<?= string(button.Type) ?>
+<<?= string(button.Type) ?> <? if button.FormId != "" { ?> form="<?= button.FormId ?>" <? } ?>
 <? if button.Type == ButtonTypeA { ?>
     <? if button.Url == "" { ?>
     href="javascript:void(0);"

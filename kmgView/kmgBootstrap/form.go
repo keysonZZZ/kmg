@@ -8,10 +8,12 @@ import (
 // 自带一个提交按钮的From表单.
 // TODO 允许调用者配置,去掉自带的按钮.
 type Form struct {
+	Id        string
 	Url       string
 	IsGet     bool // 默认是POST
 	InputList []kmgView.HtmlRenderer
 	NoSubmit  bool // 默认有一个提交按钮.
+	IsHidden  bool
 }
 
 func (f Form) HtmlRender() string {
@@ -20,11 +22,11 @@ func (f Form) HtmlRender() string {
 
 // 纵向输入框外壳
 type InputWrapVertical struct {
-	ShowName string
-	Comment  string
-	Body     kmgView.HtmlRenderer
+	ShowName  string
+	Comment   string
+	Body      kmgView.HtmlRenderer
 	AppendTpl kmgView.HtmlRenderer
-	Need     bool
+	Need      bool
 }
 
 func (f InputWrapVertical) HtmlRender() string {
@@ -71,7 +73,7 @@ type SelectVerticalString struct {
 }
 
 func (s SelectVerticalString) HtmlRender() string {
-	if s.ShowName == ""{
+	if s.ShowName == "" {
 		s.ShowName = s.Name
 	}
 	return InputWrapVertical{
@@ -99,17 +101,17 @@ func (f TextArea) HtmlRender() string {
 
 // 纵向输入框 (横向占满)
 type InputVerticalString struct {
-	Name     string
-	Value    string
-	ShowName string
-	Comment  string
-	Need     bool
-	ReadOnly bool
-	AppendTpl     kmgView.HtmlRenderer
+	Name      string
+	Value     string
+	ShowName  string
+	Comment   string
+	Need      bool
+	ReadOnly  bool
+	AppendTpl kmgView.HtmlRenderer
 }
 
 func (f InputVerticalString) HtmlRender() string {
-	if f.ShowName == ""{
+	if f.ShowName == "" {
 		f.ShowName = f.Name
 	}
 	return InputWrapVertical{
@@ -136,7 +138,7 @@ type InputVerticalInt struct {
 }
 
 func (f InputVerticalInt) HtmlRender() string {
-	if f.ShowName == ""{
+	if f.ShowName == "" {
 		f.ShowName = f.Name
 	}
 	return InputWrapVertical{
@@ -162,7 +164,7 @@ type TextAreaVerticalString struct {
 }
 
 func (f TextAreaVerticalString) HtmlRender() string {
-	if f.ShowName == ""{
+	if f.ShowName == "" {
 		f.ShowName = f.Name
 	}
 	return InputWrapVertical{

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/bronze1man/kmg/kmgTest"
+	"strings"
 )
 
 func TestIsAllAphphabet(ot *testing.T) {
@@ -41,4 +42,10 @@ func TestSubStr(t *testing.T) {
 func TestStartWith(t *testing.T) {
 	kmgTest.Ok(IsStartWith("abc", "a"))
 	kmgTest.Ok(!IsStartWith("abc", "d"))
+}
+
+func TestSplit(ot *testing.T){
+	kmgTest.Equal(strings.Split("",""),[]string{})
+	kmgTest.Equal(strings.Split("","1"),[]string{""})
+	kmgTest.Equal(strings.Split("123",","),[]string{"123"})
 }

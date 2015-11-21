@@ -11,7 +11,13 @@ func tplForm(config Form) string {
 		method = "get"
 	}
 	var _buf bytes.Buffer
-	_buf.WriteString(`    <form class="form-horizontal" autocomplete="off" role="form" action="`)
+	_buf.WriteString(`    <form `)
+	if config.IsHidden {
+		_buf.WriteString(`style="display: none;"`)
+	}
+	_buf.WriteString(` id="`)
+	_buf.WriteString(kmgXss.H(config.Id))
+	_buf.WriteString(`" class="form-horizontal" autocomplete="off" role="form" action="`)
 	_buf.WriteString(kmgXss.H(config.Url))
 	_buf.WriteString(`" method="`)
 	_buf.WriteString(kmgXss.H(method))

@@ -64,24 +64,20 @@ func NewRackspaceSDK(username, apiKey, SSHKeyName string) *RackspaceSDK {
 }
 
 func (sdk *RackspaceSDK) CreateInstance() (ip string) {
-	id := sdk.AllocateNewInstance()
-	instance := &OpenStackServers.Server{}
-	for {
-		var err error
-		instance, err = servers.Get(sdk.p, id).Extract()
-		handleErr(err)
-		fmt.Println(logPrefixRackspace, instance.ID, instance.AccessIPv4, instance.Status)
-		if instance.Status == string(RackspaceInstanceStatusACTIVE) {
-			break
-		}
-		if instance.Status == string(RackspaceInstanceStatusBUILD) {
-			time.Sleep(time.Second)
-		}
-		if instance.Status == string(RackspaceInstanceStatusUNKNOWN) || instance.Status == string(RackspaceInstanceStatusERROR) {
-			panic("Rackspace CreateInstance got ERROR/UNKNOWN " + instance.AccessIPv4 + " " + instance.ID)
+	for i := 0; i < 12; i++ {
+		id := sdk.AllocateNewInstance()
+		ip = sdk.MakeInstanceAvailable(id)
+		if ip == "" {
+			sdk.DeleteInstanceById(id)
+			continue
+		} else {
+			return ip
 		}
 	}
-	return instance.AccessIPv4
+	if ip == "" {
+		panic("[RackspaceSDK CreateInstance] Failed")
+	}
+	return ip
 }
 
 func (sdk *RackspaceSDK) AllocateNewInstance() (id string) {
@@ -113,28 +109,28 @@ func (sdk *RackspaceSDK) AllocateNewInstance() (id string) {
 	return id
 }
 
-//TODO 未做 retry
+//不断重试,彻底失败,会返回空字符串
 func (sdk *RackspaceSDK) MakeInstanceAvailable(id string) (ip string) {
-	ins := sdk.getInstance(id)
 	prefix := "[RackspaceSDK AllocateNewInstance]"
-	for i := 0; i < 40; i++ {
-		err := servers.WaitForStatus(sdk.p, id, string(RackspaceInstanceStatusACTIVE), 120)
-		if err != nil {
-			fmt.Println(prefix, err)
-			time.Sleep(time.Second * 3)
+	interval := time.Second * 3
+	for i := 0; i < 24; i++ {
+		ins := sdk.getInstance(id)
+		fmt.Println(prefix, ins.AccessIPv4, ins.Status)
+		if ins.Status != string(RackspaceInstanceStatusACTIVE) {
+			time.Sleep(interval)
 			continue
 		}
+		i = 0
 		isReachable, _ := kmgSsh.AvailableCheck(&kmgSsh.RemoteServer{
 			Address: ins.AccessIPv4,
 		})
 		if isReachable {
 			return ins.AccessIPv4
 		} else {
-			time.Sleep(time.Second * 3)
+			time.Sleep(interval)
 		}
 	}
-	sdk.DeleteInstanceById(id)
-	return sdk.CreateInstance() //肯定有一次能成功
+	return ""
 }
 
 func (sdk *RackspaceSDK) getInstance(id string) (s *OpenStackServers.Server) {

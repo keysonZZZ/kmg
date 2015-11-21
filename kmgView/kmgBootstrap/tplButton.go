@@ -9,6 +9,12 @@ func tplButton(button Button) string {
 	var _buf bytes.Buffer
 	_buf.WriteString(`<`)
 	_buf.WriteString(kmgXss.H(string(button.Type)))
+	_buf.WriteString(` `)
+	if button.FormId != "" {
+		_buf.WriteString(` form="`)
+		_buf.WriteString(kmgXss.H(button.FormId))
+		_buf.WriteString(`" `)
+	}
 	if button.Type == ButtonTypeA {
 		_buf.WriteString(`    `)
 		if button.Url == "" {

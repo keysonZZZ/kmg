@@ -169,7 +169,11 @@ func (sdk *AliyunSDK) runSingleAction(instanceId, actionName string, expectStatu
 //分配公网IP
 //重启机器
 func (sdk *AliyunSDK) CreateInstance() (ip string) {
-	return sdk.MakeInstanceAvailable(sdk.AllocateNewInstance())
+	ip = sdk.MakeInstanceAvailable(sdk.AllocateNewInstance())
+	if ip == "" {
+		panic("[AliyunSDK CreateInstance] Failed")
+	}
+	return ip
 }
 
 func (sdk *AliyunSDK) AllocateNewInstance() (id string) {
@@ -214,6 +218,7 @@ func (sdk *AliyunSDK) AllocateNewInstance() (id string) {
 	return id
 }
 
+//不断重试,彻底失败,会返回空字符串
 func (sdk *AliyunSDK) MakeInstanceAvailable(id string) (ip string) {
 	prefix := "[AliyunSDK MakeInstanceAvailable]"
 	f := func() string {
