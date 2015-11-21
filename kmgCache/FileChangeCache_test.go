@@ -6,6 +6,7 @@ import (
 
 	"github.com/bronze1man/kmg/kmgFile"
 	"github.com/bronze1man/kmg/kmgTest"
+	"github.com/bronze1man/kmg/kmgCmd"
 )
 
 func TestFileChangeCacheOneFile(t *testing.T) {
@@ -140,4 +141,25 @@ func TestFileMd5ChangeCacheOneDir(t *testing.T) {
 		callLog[9] = "f4"
 	})
 	kmgTest.Equal(callLog[9], "")
+}
+
+func TestFileMd5ChangeCacheSymlink(t *testing.T){
+	callLog := make([]string, 32)
+	//递归可用
+	kmgFile.MustDeleteFile(getFileChangeCachePath("test_file_change_cache"))
+	kmgFile.MustDelete("testFile")
+	kmgFile.MustWriteFileWithMkdir("testFile/d1/d2",[]byte("1"))
+	kmgCmd.MustRun("ln -s d1 testFile/d3")
+	MustMd5FileChangeCache("test_file_change_cache", []string{
+		"testFile",
+	}, func() {
+		callLog[0] = "f3"
+	})
+	kmgTest.Equal(callLog[0], "f3")
+	MustMd5FileChangeCache("test_file_change_cache", []string{
+		"testFile",
+	}, func() {
+		callLog[1] = "f3"
+	})
+	kmgTest.Equal(callLog[1], "")
 }

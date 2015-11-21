@@ -55,8 +55,14 @@ func MustMd5FileChangeCache(key string, pathList []string, f func()) {
 				continue
 			}
 			hasReadFileMap[stat.FullPath] = true
-			cacheMd5 := cacheInfo[stat.FullPath]
-			if kmgCrypto.MustMd5File(stat.FullPath) != cacheMd5 {
+			if stat.Fi.Mode()&os.ModeSymlink == os.ModeSymlink {
+				if "symlink_"+kmgFile.MustReadSymbolLink(stat.FullPath)!=cacheInfo[stat.FullPath]{
+					toChange = true
+					break
+				}
+				continue
+			}
+			if kmgCrypto.MustMd5File(stat.FullPath) != cacheInfo[stat.FullPath] {
 				toChange = true
 				//fmt.Printf("[MustMd5FileChangeCache] path:[%s] mod md5 not match save[%s] file[%s]\n", stat.FullPath,
 				//	cacheMd5, kmgCrypto.MustMd5File(stat.FullPath))
@@ -86,6 +92,11 @@ func MustMd5FileChangeCache(key string, pathList []string, f func()) {
 		}
 		for _, stat := range statList {
 			if stat.Fi.IsDir() {
+				continue
+			}
+			if stat.Fi.Mode()&os.ModeSymlink == os.ModeSymlink {
+				linkToPath:=kmgFile.MustReadSymbolLink(stat.FullPath)
+				cacheInfo[stat.FullPath] = "symlink_"+linkToPath
 				continue
 			}
 			cacheInfo[stat.FullPath] = kmgCrypto.MustMd5File(stat.FullPath)
