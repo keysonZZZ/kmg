@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"os"
 
+	"flag"
 	"github.com/bronze1man/kmg/errors"
+	"github.com/bronze1man/kmg/kmgCmd"
 	"github.com/bronze1man/kmg/kmgConsole"
+	"sync"
+	"time"
 )
 
 //TODO 统一进程输出的输出位置,默认不区分err和out.
@@ -46,7 +50,6 @@ func AddCommandList() {
 		Desc:   "restart the service",
 		Runner: newNameCmd(Restart),
 	})
-
 	kmgConsole.AddCommand(kmgConsole.Command{
 		Name:   "Service",
 		Runner: cmdGroup.Main,
@@ -55,6 +58,28 @@ func AddCommandList() {
 		Name:   "Service.Process",
 		Runner: processCmd,
 		Hidden: true,
+	})
+	kmgConsole.AddCommandWithName("Service.RunTest", func() {
+		cmd := ""
+		flag.StringVar(&cmd, "c", "kmg service restart kmgServiceTest", "")
+		flag.Parse()
+		wg := sync.WaitGroup{}
+		wg.Add(10)
+		for i := 0; i < 10; i++ {
+			go func() {
+				kmgCmd.MustRunInBash("setsid " + cmd)
+				wg.Done()
+			}()
+		}
+		wg.Wait()
+	})
+	kmgConsole.AddCommandWithName("Service.TestJob", func() {
+		time.Sleep(time.Second * 3)
+		ServiceStartSuccess()
+	})
+	kmgConsole.AddCommandWithName("Service.TestJobTimeout", func() {
+		time.Sleep(time.Minute * 10)
+		ServiceStartSuccess()
 	})
 }
 
@@ -127,6 +152,6 @@ func newNameCmd(fn func(name string) error) func() {
 		}
 		name := os.Args[1]
 		err := fn(name)
-		kmgConsole.ExitOnStderr(err)
+		kmgConsole.ExitOnErr(err)
 	}
 }

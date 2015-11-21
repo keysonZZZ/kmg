@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bronze1man/kmg/errors"
 	"github.com/bronze1man/kmg/kmgCrypto"
+	"github.com/bronze1man/kmg/kmgErr"
 	"github.com/bronze1man/kmg/kmgProcessMutex"
 	"time"
 )
@@ -32,17 +33,24 @@ func waitRpcRespond() chan error {
 	returnChan := make(chan error)
 	lock := &kmgProcessMutex.FileMutex{Name: "kmg_service_lock"}
 	lock.Lock()
-	ListenAndServe_ServiceRpc(rpcAddress, &ServiceRpc{}, rpcPsk)
+	rpcCloser := ListenAndServe_ServiceRpc(rpcAddress, &ServiceRpc{}, rpcPsk)
+	__closer := func() {
+		err := rpcCloser()
+		time.Sleep(time.Second)
+		lock.UnLock()
+		kmgErr.PanicIfError(err)
+	}
 	go func() {
 		select {
 		case startStatus := <-statusChannel:
-			lock.UnLock()
+			__closer()
 			if startStatus == StartStatusSuccess {
 				returnChan <- nil
+			} else {
+				returnChan <- errors.New("StartFail")
 			}
-			returnChan <- errors.New("StartFail")
 		case <-time.After(time.Minute * 2):
-			lock.UnLock()
+			__closer()
 			returnChan <- errors.New("Rpc timeout")
 		}
 	}()

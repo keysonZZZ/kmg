@@ -263,6 +263,13 @@ func H(index int, content kmgView.HtmlRenderer) kmgView.HtmlRenderer {
 	return kmgView.Html(`<h` + iStr + `>` + content.HtmlRender() + `</h` + iStr + `>`)
 }
 
+func HString(index int,content string) kmgView.HtmlRenderer{
+	if index==0{
+		index=1
+	}
+	return kmgView.Html(`<h` + strconv.Itoa(index) + `>` + kmgXss.H(content) + `</h` + strconv.Itoa(index) + `>`)
+}
+
 func Pre(content string) kmgView.HtmlRenderer {
 	return kmgView.Html(`<pre>` + kmgXss.H(content) + `</pre>`)
 }

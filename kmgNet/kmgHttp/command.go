@@ -7,6 +7,7 @@ import (
 	"github.com/bronze1man/kmg/kmgCache"
 	"github.com/bronze1man/kmg/kmgConsole"
 	"github.com/bronze1man/kmg/kmgCrypto"
+	"github.com/bronze1man/kmg/kmgErr"
 	"github.com/bronze1man/kmg/kmgFile"
 	"github.com/bronze1man/kmg/kmgStrings"
 	"net/http"
@@ -60,6 +61,8 @@ func runFileHttpServer() {
 			fmt.Printf("os.Getwd() fail %s", err)
 			return
 		}
+	} else {
+		kmgErr.PanicIfError(os.Chdir(path))
 	}
 	if key == "" {
 		http.Handle("/", http.FileServer(http.Dir(path)))
